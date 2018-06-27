@@ -28,8 +28,7 @@ int main()
 		{
 			p=buf;
 		}
-		usleep(500000);					//延时
-	//	sleep(1);
+	//	usleep(500000);					//延时
 	}
 	return 0;
 }

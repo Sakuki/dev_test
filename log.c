@@ -6,12 +6,14 @@
 #include <string.h>
 #include <unistd.h>
 
+#define	FILE_SIZE 10000000		//自定义文件大小
+#define DATA_SIZE 512			//数据大小
+
 int main()
 {
-	char temp[512]={0};
-	int i=1,fd_log,buf_size=0,buf_flag=0;
-	int size_buf=0;
-	struct stat st;
+	char temp[DATA_SIZE]={0};
+	char over[DATA_SIZE];
+	int i=1,fd_log,buf_size=0;
 	fd_log = open("./loginfo.log", O_WRONLY | O_CREAT, 0640);	//打开需要写入的日志文件
 	FILE *fd_set = fopen("./Offset.txt", "rt");		//打开存放偏移量的文件
 	if(fd_log < 0)
@@ -30,21 +32,28 @@ int main()
 	
 	while(1)
 	{
-		if(buf_size > 1024*1024)		//检测是否超过所定大小
-		{
-			buf_flag=1;
-			buf_size=0;
-		}
-		if(buf_flag)			//跳转到文件头
-		{
-			printf("1111\n");
-			lseek(fd_log,0,SEEK_SET);
-			buf_flag=0;
-		}
 		
-		klogctl(4, temp, 512);				//获取日志文件内容
+		klogctl(4, temp, DATA_SIZE);				//获取日志文件内容
 		printf("%d :\n%s\n", i,temp);		//打印内容
-		write(fd_log,temp,strlen(temp));	//将内容写入到自定义文件中
+		
+		if(FILE_SIZE-buf_size < strlen(temp))	//比较文件剩余大小和数据大小
+		{
+			write(fd_log,temp,FILE_SIZE-buf_size);	//将temp中等同文件剩余大小数据存入log文件中
+		//	printf("11111\n");
+			lseek(fd_log,0,SEEK_SET);				//文件指针指向文件头
+			strcpy(over,temp+(FILE_SIZE-buf_size));
+			write(fd_log,over,strlen(over));		//将temp剩余数据存入log文件中
+			buf_size = strlen(over);
+			fd_set=NULL;						
+			fd_set = fopen("./Offset.txt", "w");
+			fprintf(fd_set,"%d",buf_size);		//写入新的偏移量值
+			fclose(fd_set);
+			printf("new fd_size %d\n",buf_size);
+			i++;
+		//	usleep(500000);
+			continue;
+		}
+		write(fd_log,temp,strlen(temp));	//将内容写入到log文件中
 		buf_size +=strlen(temp);			//增加偏移量
 		fd_set=NULL;						//清空.txt文件内容
 		fd_set = fopen("./Offset.txt", "w");
@@ -52,8 +61,7 @@ int main()
 		fclose(fd_set);
 		printf("new fd_size %d\n",buf_size);
 		i++;
-	//	sleep(1);
-		usleep(500000);	
+	//	usleep(500000);	
 	}
 	close(fd_log);
 	return 0;
