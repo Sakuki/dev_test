@@ -7,7 +7,11 @@
 #include <unistd.h>
 
 #define	FILE_SIZE 10000000		//自定义文件大小
+<<<<<<< HEAD
 #define DATA_SIZE 50			//数据大小
+=======
+#define DATA_SIZE 512			//数据大小
+>>>>>>> cb57e965980fc489ba949204ebad5b2c09df69a5
 
 int main()
 {
@@ -50,7 +54,11 @@ int main()
 			fclose(fd_set);
 			printf("new fd_size %d\n",buf_size);
 			i++;
+<<<<<<< HEAD
 			usleep(100000);
+=======
+		//	usleep(500000);
+>>>>>>> cb57e965980fc489ba949204ebad5b2c09df69a5
 			continue;
 		}
 		write(fd_log,temp,strlen(temp));	//将内容写入到log文件中
@@ -61,7 +69,11 @@ int main()
 		fclose(fd_set);
 		printf("new fd_size %d\n",buf_size);
 		i++;
+<<<<<<< HEAD
 		usleep(100000);	
+=======
+	//	usleep(500000);	
+>>>>>>> cb57e965980fc489ba949204ebad5b2c09df69a5
 	}
 	close(fd_log);
 	return 0;
