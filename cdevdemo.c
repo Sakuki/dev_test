@@ -1,5 +1,4 @@
 #include <linux/module.h>
-<<<<<<< HEAD
 #include <linux/init.h>
 #include <linux/kthread.h>
 #include <linux/cdev.h>
@@ -11,33 +10,6 @@
 static int cdevdemo_major = COEVDEMO_MAJOR;
 char temp[256]={0};
 static struct task_struct *tsk;
-=======
-#include <linux/types.h>
-#include <linux/fs.h>
-#include <linux/errno.h>
-#include <linux/mm.h>
-#include <linux/sched.h>
-#include <linux/init.h>
-#include <linux/cdev.h>
-#include <linux/timer.h>
-#include <linux/slab.h>
-#include <linux/device.h>
-#include <linux/uaccess.h>
-#include <asm/io.h>
-#include <asm/uaccess.h>
-#include <asm/atomic.h>
-
-#define COEVDEMO_MAJOR 230 	//预设cdevdemo的主设备号
-
-  
-#ifndef MEMDEV_SIZE  
-#define MEMDEV_SIZE 4096  
-#endif  
- 
-
-static int cdevdemo_major = COEVDEMO_MAJOR;
-char temp[256]={0};
->>>>>>> cb57e965980fc489ba949204ebad5b2c09df69a5
 
 struct cdevdemo_dev
 {
@@ -46,87 +18,23 @@ struct cdevdemo_dev
 
 struct cdevdemo_dev *cdevdemo_devp;	//设备结构体指针
 
-<<<<<<< HEAD
-static int thread_function(void *data)
+static int thread_function(void *data)			//线程功能
 {
 	int t_count = 0;
-	while(!kthread_should_stop())
+	while(!kthread_should_stop())		//should_stop标志
 	{
 		 
-		printk(KERN_NOTICE "This is a test dev %d\n",t_count++);
+		printk(KERN_NOTICE "This is a test dev %d\n",t_count++);	//每隔100毫秒打印一次
 		msleep(100);
 	}
 	
 	return t_count;
-=======
-int cdevdemo_open(struct inode *inode, struct file *filp)
-{
-//	printk(KERN_NOTICE "=======cdevdemo_open");
-	return 0;
-}
-
-int cdevdemo_release(struct inode *inode,struct file *filp)
-{
-//	printk(KERN_NOTICE "=======cdevdemo_release");
-	return 0;
-}
-
-static ssize_t cdevdemo_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
-{
-	if(copy_to_user(buf,temp,len))
-	{
-		return -EFAULT;
-	}
-	return len;
-}
-
-static ssize_t cdevdemo_write(struct file *filep, const char __user *buf, size_t len, loff_t *ppos)
-{
-	if(copy_from_user(temp,buf,len))
-	{
-		return -EFAULT;
-	}
-	printk(KERN_NOTICE "write %s\n",temp);
-	return len;
-}
-
-loff_t cdevdemo_llseek(struct file *filp, loff_t off, int whence)
-{
-//	struct cdevdemo_dev *dev = filp->private_data;
-	loff_t newpos;
-	switch(whence){
-		case 0:		//SEEK_SET文件起始位置
-			newpos = off;
-			break;
-		case 1:
-			newpos = filp->f_pos+off;		//SEEK_CUR当前位置
-			break;
-		case 2:
-			newpos = MEMDEV_SIZE -1+off;
-		//	newpos = 254+off;		//SEEK_END文件结尾
-			break;
-		default:
-			return -EINVAL;
-	}
-	if(newpos < 0)
-		return -EINVAL;
-	filp->f_pos=newpos;
-	return newpos;
->>>>>>> cb57e965980fc489ba949204ebad5b2c09df69a5
 }
 
 //文件操作结构体
 static const struct file_operations cdevdemo_fops =
 {
 	.owner = THIS_MODULE,
-<<<<<<< HEAD
-=======
-	.open = cdevdemo_open,
-	.release = cdevdemo_release,
-	.read = cdevdemo_read,
-	.write = cdevdemo_write,
-	.llseek = cdevdemo_llseek,
->>>>>>> cb57e965980fc489ba949204ebad5b2c09df69a5
 };
 
 //初始化并注册cdev
@@ -183,9 +91,8 @@ int cdevdemo_init(void)
 	device_create(cdevdemo_class, NULL, MKDEV(cdevdemo_major, 0), NULL, "cdevdemo");
 	
 	printk(KERN_NOTICE "=========cdevdemo_init success");
-<<<<<<< HEAD
 	
-	tsk = kthread_run(thread_function,NULL,"test_task");
+	tsk = kthread_run(thread_function,NULL,"test_task");	//创建并启动线程
 	if(IS_ERR(tsk))
 	{
 		printk(KERN_NOTICE "create kthread failed!\n");
@@ -195,8 +102,6 @@ int cdevdemo_init(void)
 		printk(KERN_NOTICE "create kthread seccess!\n");
 	}
 	
-=======
->>>>>>> cb57e965980fc489ba949204ebad5b2c09df69a5
 	return 0;
 	
 	fail_malloc:
@@ -206,16 +111,13 @@ int cdevdemo_init(void)
 void cdevdemo_exit(void)	//模块卸载
 {
 	printk(KERN_NOTICE "End cdevdemo");
-<<<<<<< HEAD
 	
 	if(!IS_ERR(tsk))
 	{
-		int ret = kthread_stop(tsk);
+		int ret = kthread_stop(tsk);		//结束线程
 		printk(KERN_NOTICE "The test dev run %d times\n",ret);
 	}
 	
-=======
->>>>>>> cb57e965980fc489ba949204ebad5b2c09df69a5
 	cdev_del(&cdevdemo_devp->cdev);		//注销cdev
 	kfree(cdevdemo_devp);				//释放设备结构体内存
 	unregister_chrdev_region(MKDEV(cdevdemo_major, 0), 1);		//释放设备号
@@ -224,8 +126,4 @@ void cdevdemo_exit(void)	//模块卸载
 MODULE_LICENSE("Dual BSD/GPL");
 module_param(cdevdemo_major, int, S_IRUGO);
 module_init(cdevdemo_init);
-<<<<<<< HEAD
 module_exit(cdevdemo_exit);
-=======
-module_exit(cdevdemo_exit);
->>>>>>> cb57e965980fc489ba949204ebad5b2c09df69a5
